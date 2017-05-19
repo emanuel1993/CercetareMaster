@@ -1,0 +1,6 @@
+id	conf	title	author	year	abstract	conf_short	theme
+1	ICDE	A Rule-based Language for Deductive Object-Oriented Databases.	A. M. Alashqur,Stanley Y. W. Su,Herman Lam	1990	A Rule-based Language for Deductive Object-Oriented Databases.	ICDE	database
+2	ICDE	Bill-of-Material Configuration Generation.	Michael R. Blaha,William J. Premerlani,A. R. Bender,R. M. Salemme,M. M. Kornfein,C. K. Harkins	1990	Bill-of-Material Configuration Generation.	ICDE	database
+3	ICDE	Title, General Chairman's Message, Program Chairman's Message, Reviewers, Table of Contents, Author Index.		1990	Title, General Chairman's Message, Program Chairman's Message, Reviewers, Table of Contents, Author Index.	ICDE	database
+4	ICDE	The Generalized Grid File: Description and Performance Aspects.	Henk M. Blanken,Alle IJbema,Paul Meek,Bert van den Akker	1990	The Generalized Grid File: Description and Performance Aspects.	ICDE	database
+5	ICDE	Join Index, Materialized View, and Hybrid-Hash Join: A Performance Analysis.	José A. Blakeley,Nancy L. Martin	1990	Join Index, Materialized View, and Hybrid-Hash Join: A Performance Analysis.	ICDE	database
