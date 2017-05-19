@@ -118,12 +118,12 @@ if __name__ == '__main__':
 				avgLen = avgLen + freq
 
 	# matriSize = (len(wordFreqs), len(wordsToId)) # old code
-	matri1Size = (len(wordFreqs) / 2, len(wordsToID))
-	matri2Size = (len(wordFreqs) - len(wordFreqs) / 2, len(wordsToID))
-	totalDocs = matriSize[0]
+	matri1Size = (int(len(wordFreqs) / 2), len(wordsToId))
+	matri2Size = (len(wordFreqs) - int(len(wordFreqs) / 2), len(wordsToId))
+	totalDocs = len(wordFreqs)
 	avgLen = avgLen / float(totalDocs)
 
-	#mainMatrix = np.zeros(matriSize) # old code
+	# mainMatrix = np.zeros(matriSize) # old code
 	matri1 = np.zeros(matri1Size)
 	matri2 = np.zeros(matri2Size)
 
@@ -150,7 +150,7 @@ if __name__ == '__main__':
 		for j in range(matri1Size[1]):
 			freq = wordFreqs[i][i + 1].get(idToWords[j])
 			resultLine.append(0 if freq is None else freq)
-		matri2[i, :] = resultLine
+		matri2[i - matri1Size[0], :] = resultLine
 
 	# get okapi matrix
 	# okapiMatrix = sc.parallelize(mainMatrix).map(getOkapiMap).collect()
@@ -181,14 +181,14 @@ if __name__ == '__main__':
 				wordId = wordsToId.get(query[j])
 				if wordId is None:
 					continue
-				topkval += matri2[i + matri1Size[0], wordId]
-			topkdoc.append((i + matri1Size[0], wordId))
+				topkval += matri2[i, wordId]
+			topkdoc.append((i + matri1Size[0] + 1, topkval))
 		topkdoc = sorted(topkdoc, key=lambda x: x[1], reverse=True)
 		debugFile.write(str(topkdoc[:10]) + '\n')
 
 	# top-k-words
 	topkwords = []
-	for k in range(matriSize[1]):
+	for k in range(matri1Size[1]):
 		topkwords.append((idToWords[k], np.sum(matri1[:, k]) + np.sum(matri2[:, k])))
 		#topkwords.append((idToWords[k], np.sum(mainMatrix[:, k])))
 	topkwords = sorted(topkwords, key=lambda x: x[1], reverse=True)
