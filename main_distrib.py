@@ -12,7 +12,6 @@ import math
 from pyspark import SparkContext, SparkConf
 from scipy.sparse import csr_matrix
 
-# spark-submit --master yarn --deploy-mode client main_distrib.py
 # globals
 cEN = utils.contractionsEN()
 swEN = utils.stopWordsEN()
