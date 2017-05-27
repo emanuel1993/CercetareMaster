@@ -117,43 +117,80 @@ if __name__ == '__main__':
 					nrDocsPerTerm[curWordId] += 1
 				avgLen = avgLen + freq
 
-	matriSize = (len(wordFreqs), len(wordsToId))
+	# matriSize = (len(wordFreqs), len(wordsToId)) # old code
+	matri1Size = (int(len(wordFreqs) / 2), len(wordsToId))
+	matri2Size = (len(wordFreqs) - int(len(wordFreqs) / 2), len(wordsToId))
 	totalDocs = len(wordFreqs)
 	avgLen = avgLen / float(totalDocs)
 
-	mainMatrix = np.zeros(matriSize)
+	# mainMatrix = np.zeros(matriSize) # old code
+	matri1 = np.zeros(matri1Size)
+	matri2 = np.zeros(matri2Size)
 
-	for i in range(matriSize[0]):
+	# for i in range(matriSize[0]):
+	# 	resultLine = []
+	# 	for j in range(matriSize[1]):
+	# 		freq = wordFreqs[i][i + 1].get(idToWords[j])
+	# 		resultLine.append(0 if freq is None else freq)
+	# 	mainMatrix[i, :] = resultLine
+
+	for i in range(matri1Size[0]):
+		resultLine1 = []
+		resultLine2 = []
+		for j in range(matri1Size[1]):
+			freq1 = wordFreqs[i][i + 1].get(idToWords[j])
+			freq2 = wordFreqs[i + matri1Size[0]][i + matri1Size[0] + 1].get(idToWords[j])
+			resultLine1.append(0 if freq1 is None else freq1)
+			resultLine2.append(0 if freq2 is None else freq2)
+		matri1[i, :] = resultLine1
+		matri2[i, :] = resultLine2
+
+	for i in range(2 * matri1Size[0], len(wordFreqs)):
 		resultLine = []
-		for j in range(matriSize[1]):
+		for j in range(matri1Size[1]):
 			freq = wordFreqs[i][i + 1].get(idToWords[j])
 			resultLine.append(0 if freq is None else freq)
-		mainMatrix[i, :] = resultLine
+		matri2[i - matri1Size[0], :] = resultLine
 
 	# get okapi matrix
-	okapiMatrix = sc.parallelize(mainMatrix).map(getOkapiMap).collect()
-	mainMatrix = np.matrix(okapiMatrix)
+	# okapiMatrix = sc.parallelize(mainMatrix).map(getOkapiMap).collect()
+	# mainMatrix = np.matrix(okapiMatrix)
+	okapi1Matrix = sc.parallelize(matri1).map(getOkapiMap).collect()
+	okapi2Matrix = sc.parallelize(matri2).map(getOkapiMap).collect()
+
+	matri1 = np.matrix(okapi1Matrix)
+	matri2 = np.matrix(okapi2Matrix)
 
 	# top-k-docs
 	queries = [['object-oriented'], ['object-oriented', 'deductive'], ['object-oriented', 'deductive', 'database'], ['object-oriented', 'deductive', 'database', 'perform'], ['object-oriented', 'deductive', 'database', 'perform', 'language']]
 	debugFile = open('/home/hadoop/resultEmanuel.txt', 'w')
 	for query in queries:
 		topkdoc = []
-		for i in range(matriSize[0]):
+		for i in range(matri1Size[0]):
 			topkval = 0
 			for j in range(len(query)):
 				wordId = wordsToId.get(query[j])
 				if wordId is None:
 					continue
-				topkval += mainMatrix[i, wordId]
+				topkval += matri1[i, wordId]
+				#topkval += np.sum(mainMatrix[i, wordId])
 			topkdoc.append((i + 1, topkval))
+		for i in range(matri2Size[0]):
+			topkval = 0
+			for j in range(len(query)):
+				wordId = wordsToId.get(query[j])
+				if wordId is None:
+					continue
+				topkval += matri2[i, wordId]
+			topkdoc.append((i + matri1Size[0] + 1, topkval))
 		topkdoc = sorted(topkdoc, key=lambda x: x[1], reverse=True)
 		debugFile.write(str(topkdoc[:10]) + '\n')
 
 	# top-k-words
 	topkwords = []
-	for k in range(matriSize[1]):
-		topkwords.append((idToWords[k], np.sum(mainMatrix[:, k])))
+	for k in range(matri1Size[1]):
+		topkwords.append((idToWords[k], np.sum(matri1[:, k]) + np.sum(matri2[:, k])))
+		#topkwords.append((idToWords[k], np.sum(mainMatrix[:, k])))
 	topkwords = sorted(topkwords, key=lambda x: x[1], reverse=True)
 	debugFile.write(str(topkwords[:10]) + "\n")
 	debugFile.close()
